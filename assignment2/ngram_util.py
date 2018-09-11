@@ -48,6 +48,12 @@ class NGramModel():
                 numerator = self.get_count(tup)
                 proba = numerator / denominator
                 self.proba_matrix[given_ngram][new_word] = proba
+        else:
+            # unigram probabilities .. just cound divided by token size
+            token_size = len(self.corpus)
+            for word in self.corpus:
+                self.proba_matrix[word] = self.counter.get((word,)) / token_size
+
     
     
     
@@ -65,6 +71,8 @@ class NGramModel():
         # assume ngram is correct length, i.e self.n
         ngram = tuple(sentence.split(' '))
         
+        if self.n==1:
+            return self.proba_matrix[ngram[0]]
         if len(ngram) == self.n:
             given_phrase = ngram[:-1]
             last_word = ngram[-1]
@@ -72,10 +80,24 @@ class NGramModel():
         else:
             raise ValueError("wrong length of sentence")
 
-    def generate_sentence(self, length_limit=50):
-        sentence = ['</s>']
+    def generate_sentence(self, length_limit=50, start_words=None):
+        if not start_words:
+            xkeys = [x for x in self.proba_matrix.keys()]
+            idx = np.random.choice(len(xkeys),1)[0]
+            sentence = [x for x in xkeys[idx]]
+            #print (sentence)
+        else:            
+            if type(start_words) == str:
+                sentence = [x for x in start_words.split(' ')]
+            elif type(start_words) == list:
+                sentence = start_words
+            if len(sentence) < self.n:
+                # back off -- kinda. use lower order n gram to generate sentence
+                return self.subModels[0].generate_sentence(start_words=sentence)
+
+        n = self.n - 1
         while True:
-            start_sent_words = self.proba_matrix[(sentence[-1],)]
+            start_sent_words = self.proba_matrix[tuple(sentence[-n:])]
             words = np.array([x for x in start_sent_words.keys()])
             probb = np.array([x for x in start_sent_words.values()])
 
@@ -85,5 +107,6 @@ class NGramModel():
             
             if newword == '</s>' or length_limit<=0:
                 break
-
-        return sentence[1:]
+        # create a nice string from the list
+        s1 = ' '.join(sentence).replace('</s>', '').strip() + '.'
+        return s1
