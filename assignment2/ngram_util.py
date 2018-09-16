@@ -33,82 +33,44 @@ class NGramModel():
             # for probabilities of ngram model, we will also need counts of n-1 gram
             self.subModel = NGramModel(self.n-1, self.corpus)
             self.subModel.buildModels()
-        
-            for ng in self.counter:
-                given_phrase = ng[:-1]
-                new_word = ng[-1]
-                # for example, 'said alice' becomes ('said',) and 'alice'
-
-                if given_phrase not in self.count_matrix:
-                    self.count_matrix[given_phrase] = {}
-                self.count_matrix[given_phrase][new_word] = self.counter[ng]
-                
-                # smoothing
-                # basically, alter the counts of all existing ngrams acc to formula
-                if self.smoothing == 'addone':
-                    old_count = self.count_matrix[given_phrase][new_word]
-                    submodel_count = self.subModel.get(given_phrase)
-                    self.count_matrix[given_phrase][new_word] = ( (old_count + 1) / (submodel_count + len(self.vocab)) ) * submodel_count
-                    #print ("Adjusted count for {} is {}, old count was {}".format(ng,self.count_matrix[given_phrase][new_word], old_count))
-
-        
-        else: # unigrams
-            for word in self.vocab:
-                one_tuple = (word,) # syntactic sugar
-                self.count_matrix[one_tuple] = self.counter[one_tuple] if self.counter[one_tuple] else 0
 
     
-    # one function to rule them all.. i mean to return count and proba
-    # accepted values for what='count' (default) and 'proba'
-    def get(self, ngram, what='count'):
+    def get_count(self, ngram):
         if not type(ngram) == tuple:
             ngram = tuple(ngram.split(' '))
         ln = len(ngram)
         if not ln == self.n:
             raise ValueError("Provided n-gram is of length {}, where it should have been {}".format(ln,self.n))
-        if what not in ['count', 'proba']:
-            raise ValueError('Invalid \'what\' parameter : {}'.format(what))
-
-        if ln==1: # again syntatic issues a.k.a special case for unigrams
-            if ngram in self.count_matrix:
-                if what=='count':
-                    return self.count_matrix[ngram]
-                else: #return probability in log10 space
-                    return self.count_matrix[ngram] / self.corpus_length
-            else:
-                return 0
         
-        else: #bigram and higher
+        
+        this_count = self.counter[ngram] if self.counter[ngram] else 0
+        if ln==1: return this_count
+        
+        if not self.smoothing:
+            return this_count
+        elif self.smoothing=='addone':
             g_phrase = ngram[:-1]
-            n_word = ngram[-1]
-
-            if g_phrase in self.count_matrix:
-                if n_word in self.count_matrix[g_phrase]:
-                    thiscount = self.count_matrix[g_phrase][n_word] # smoothing already done in buildModels
-                    
-                    if what=='count':
-                        return thiscount
-                    else: #proba .. in log10 space
-                        return thiscount / self.subModel.get(g_phrase)
-                # else: 
-                    # g_phrase is there, but n_word is not. adjusted count/proba still nonzero:
-                    # this case handled implicitly below...since we're going to subModel anyway
-                    
-
-            # take smoothing into account..calculate adjusted count or proba
-            if self.smoothing=='addone':
-                submodel_count = self.subModel.get(g_phrase)                
-                if what=='count':
-                    return submodel_count / (submodel_count + len(self.vocab))
-                else:
-                    return 1 / (submodel_count + len(self.vocab))
-
-            elif self.smoothing == 'goodturing':
-                pass
-            else:
-                return 0
-
+            submodel_count = self.subModel.get_count(g_phrase)
+            return (this_count + 1) / (submodel_count + len(self.vocab)) * submodel_count
+        else: #good turing
+            pass
+                
+    def generate_sentence(self, max_length=30):
         
-    
+        start_word = self.ngrams
 
-    
+
+    def get_proba(self, ngram):
+        if not type(ngram) == tuple:
+            ngram = tuple(ngram.split(' '))
+        ln = len(ngram)
+        if not ln == self.n:
+            raise ValueError("Provided n-gram is of length {}, where it should have been {}".format(ln,self.n))
+
+
+        if ln==1: #unigram special case
+            return self.get_count(ngram) / len(self.corpus)
+        else:
+            this_count = self.get_count(ngram)
+            return this_count / self.subModel.get_count(ngram[:-1])
+
