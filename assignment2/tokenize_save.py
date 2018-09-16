@@ -31,8 +31,9 @@ with open('corpus_ALL.txt', 'w', encoding='utf-8') as fh:
         for word in sent:
             fh.write(word+' ')
             
-train_sents = sents[:int(.8*len(sents))]
-test_sents = sents[(int(.2*len(sents)))]
+split_index = int(.8*len(sents))
+train_sents = sents[:split_index]
+test_sents = sents[split_index:]
 with open('corpus_train.txt', 'w', encoding='utf-8') as fh:
     for x in train_sents:
         for word in x:
