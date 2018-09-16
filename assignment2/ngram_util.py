@@ -69,7 +69,8 @@ class NGramModel():
     
     def get_proba(self, sentence):
         # assume ngram is correct length, i.e self.n
-        ngram = tuple(sentence.split(' '))
+        words = sentence.split(' ')
+        ngram = tuple()
         
         if self.n==1:
             return self.proba_matrix[ngram[0]]

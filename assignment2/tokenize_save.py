@@ -24,15 +24,19 @@ sents = [x for x in map(lambda x: x + ' </s>', sents)]
 sents = np.array(sents)
 
 
+with open('corpus_ALL.txt', 'w', encoding='utf-8') as fh:
+    for x in sents:
+        fh.write(x.strip()+' ')
+
 train_sents = np.random.choice(sents, size=int(0.8 * len(sents)), replace=False)
 test_sents = np.random.choice(sents, size=int(0.2 * len(sents)), replace=False)
 
 with open('corpus_train.txt', 'w', encoding='utf-8') as fh:
     for x in filter(lambda x: len(x)>0, [x.split() for x in train_sents]):
         for word in x:
-            fh.write(word+' ')
+            fh.write(word.strip()+' ')
 
 with open('corpus_test.txt', 'w', encoding='utf-8') as fh:
     for x in filter(lambda x: len(x)>0, [x.split() for x in test_sents]):
         for word in x:
-            fh.write(word+' ')
+            fh.write(word.strip()+' ')
