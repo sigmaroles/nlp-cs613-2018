@@ -44,8 +44,8 @@ class NGramModel():
                 if given_ngram not in self.proba_matrix:
                     self.proba_matrix[given_ngram] = {}
                 
-                denominator = self.subModels[0].get_count(given_ngram)
-                numerator = self.get_count(tup)
+                denominator = self.subModels[0]._get_count(given_ngram)
+                numerator = self._get_count(tup)
                 proba = numerator / denominator
                 self.proba_matrix[given_ngram][new_word] = proba
         else:
@@ -56,17 +56,14 @@ class NGramModel():
 
     
     
-    
-    def most_common(self, n=15):
-        return self.counter.most_common(n)
-    
-    def get_count(self, sentence):
-        if not type(sentence) == tuple:
-            sentence = tuple(sentence.split(' '))
+    def _get_count(self, ngram):
+        if not type(ngram) == tuple:
+            ngram = tuple(ngram.split(' '))
         
-        cc = self.counter.get(sentence)
+        cc = self.counter.get(ngram)
         return cc if cc else 0            
     
+    """
     def get_proba(self, sentence):
         # assume ngram is correct length, i.e self.n
         words = sentence.split(' ')
@@ -80,6 +77,7 @@ class NGramModel():
             return self.proba_matrix[given_phrase][last_word]
         else:
             raise ValueError("wrong length of sentence")
+    """
 
     def generate_sentence(self, length_limit=50, start_words=None):
         if not start_words:
