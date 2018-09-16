@@ -6,9 +6,11 @@ with open('corpus_ALL.txt', 'r', encoding='utf-8') as fh:
     
 corpus = tt.split(' ')
 
-m1 = NGramModel(2,corpus)
+m1 = NGramModel(3,corpus, smoothing='addone')
+#m1 = NGramModel(3,corpus)
 m1.buildModels()
 
 
-for _ in range(10):
-    print (m1.generate_sentence())
+#for word in ['thought', 'mouse', 'alice', 'dormouse']:
+for word in ['shrill passionate hold', 'a capital one']:
+    print (word, m1.get(word, what='count'), m1.get(word, what='proba'))
