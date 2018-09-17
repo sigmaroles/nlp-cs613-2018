@@ -18,7 +18,7 @@ class NGramModel():
         
         
     def buildModels(self):
-        print ("Inside build models of ",self.n,"gram")
+        print ("About to build {} gram models".format(self.n))
         # iterate over corpus and enumerate/store ngrams
         for i in range(self.corpus_length - (self.n-1)):
             this_tuple = tuple([self.corpus[tindx] for tindx in range(i, i+self.n)])
@@ -73,28 +73,45 @@ class NGramModel():
             raise ValueError("Provided n-gram is of length {}, where it should have been {}".format(ln,self.n))
 
         if ln==1: #unigram special case
-            return self.get_count(ngram) / len(self.corpus)
+            ret = self.get_count(ngram) / len(self.corpus)
+            
         else:
             actual_count = self.counter[ngram] if self.counter[ngram] else 0
             submodel_count = self.subModel.get_count(ngram[:-1])
             if not self.smoothing:
-                return actual_count / submodel_count
+                ret = actual_count / submodel_count
+                
             elif self.smoothing=='addone':
-                return (actual_count + 1 ) / (submodel_count + len(self.vocab))
+                ret = (actual_count + 1 ) / (submodel_count + len(self.vocab))
+                
             else: # good turing
                 N = len(self.ngrams)
                 if not actual_count: # zero count of given ngram
-                    return self.count_of_count[1] / N
+                    ret = self.count_of_count[1] / N
+                    
                 else:
                     n_c = self.count_of_count[actual_count]
                     n_c_plus_one = self.count_of_count[actual_count+1]
                     adjusted_count = (actual_count + 1) * (n_c_plus_one / n_c)
-                    return (adjusted_count / N)
+                    ret = (adjusted_count / N)
+        return ret if not logspace else np.log10(ret)
 
 
 
     def get_probability(self, sentence):
-        pass
+        sentence = ['</s>'] + sentence.split(' ')
+        ngrams = []
+        for i in range(len(sentence) - (self.n-1)):
+            this_tuple = tuple([sentence[tindx] for tindx in range(i, i+self.n)])
+            ngrams.append(this_tuple)
+        return_proba = 0.0
+        for ng in ngrams:
+            pp = self._get_proba(ng, logspace=True)
+            print (pp)
+            if pp:
+                return_proba += pp
+        return return_proba
+
 
 
     def generate_sentence(self, max_length=30, start_words = None):
