@@ -15,15 +15,17 @@ class NGramModel():
         self.count_of_count = None
         if smoothing not in ['addone', 'goodturing', None]:
             raise ValueError('Unknown smoothing type : {}'.format(smoothing))
+            
         
     def get_count_possible_and_actual_ngrams(self):
         from scipy.special import comb
         n = len(self.vocab)
         k = len(self.ngrams)
         return int(comb(n,2)), k
+
         
     def buildModels(self):
-        print ("About to build {} gram model with {} smoothing".format(self.n, self.smoothing))
+        #print ("About to build {} gram model with {} smoothing".format(self.n, self.smoothing))
         self.ngrams = []
         # iterate over corpus and enumerate/store ngrams
         for i in range(self.corpus_length - (self.n-1)):
@@ -73,10 +75,8 @@ class NGramModel():
         ln = len(ngram)
         if not ln == self.n:
             raise ValueError("Provided n-gram is of length {}, where it should have been {}".format(ln,self.n))
-
         if ln==1: #unigram special case
             ret = self.get_count(ngram) / len(self.corpus)
-            
         else:
             actual_count = self.counter[ngram] if self.counter[ngram] else 0
             submodel_count = self.subModel.get_count(ngram[:-1])
@@ -94,7 +94,6 @@ class NGramModel():
                     adjusted_count = (actual_count + 1) * (n_c_plus_one / n_c)
                     ret = (adjusted_count / N)
         return ret if not logspace else np.log(ret)
-
 
 
     def _sent2ngrams(self, sentence):
