@@ -8,7 +8,7 @@ class NGramModel():
         self.corpus = corpus
         self.counter = None
         self.corpus_length = len(corpus)
-        self.ngrams = []
+        self.ngrams = None
         self.subModel = None
         self.smoothing = smoothing
         self.vocab = set(corpus)
@@ -16,9 +16,15 @@ class NGramModel():
         if smoothing not in ['addone', 'goodturing', None]:
             raise ValueError('Unknown smoothing type : {}'.format(smoothing))
         
+    def get_count_possible_and_actual_ngrams(self):
+        from scipy.special import comb
+        n = len(self.vocab)
+        k = len(self.ngrams)
+        return int(comb(n,2)), k
         
     def buildModels(self):
-        print ("About to build {} gram models".format(self.n))
+        print ("About to build {} gram model with {} smoothing".format(self.n, self.smoothing))
+        self.ngrams = []
         # iterate over corpus and enumerate/store ngrams
         for i in range(self.corpus_length - (self.n-1)):
             this_tuple = tuple([self.corpus[tindx] for tindx in range(i, i+self.n)])

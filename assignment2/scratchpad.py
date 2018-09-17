@@ -1,23 +1,20 @@
 from ngram_util import NGramModel
 import numpy as np
 
-with open('corpus_ALL.txt', 'r', encoding='utf-8') as fh:
-    tt = fh.read()
-    
-corpus = tt.split(' ')
+with open('corpus_train.txt', 'r', encoding='utf-8') as fh:
+    train_txt = fh.read()
+train_corpus = train_txt.split(' ')
 
-m1 = NGramModel(2,corpus, smoothing='addone')
-#m1 = NGramModel(2,corpus)
+m1 = NGramModel(2,train_corpus, smoothing='goodturing')
 m1.buildModels()
+m2 = NGramModel(2,train_corpus, smoothing='addone')
+m2.buildModels()
 
+print ("building models done")
 
-#for word in ['thought', 'mouse', 'alice', 'dormouse']:
-for word in ['said alice', 'thought she']:
-    print (word, m1.get_count(word), m1._get_proba(word))
+with open('corpus_test.txt', 'r', encoding='utf-8') as fh:
+    test_txt = fh.read()
+test_sentences = list(map(lambda x:x.strip(), test_txt.split('</s>')))
 
-for i in range(20):
-    #print (m1.generate_sentence(start_words='said'))
-    print (m1.generate_sentence())
-
-
-#m1.generate_sentence()
+perplexities = [(m1.get_perplexity(sent), m2.get_perplexity(sent)) for sent in test_sentences]
+print (perplexities[:20])

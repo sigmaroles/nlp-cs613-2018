@@ -1,7 +1,20 @@
-**Steps to run:**
+### Using Alice In Wonderland text
 
-Preprocessing:
+raw file is alice_wonderland.txt
 
-python tokenize_save.py
+### tokenizing and saving train/test corpus:
+please see tokenize_save.py
 
-To see demo of sentence generation and probabilities, see demos.ipynb
+### n-gram model with MLE, add one smoothing and Good-Turing smoothing
+please see ngram_util.py
+
+
+### "Drastic change" in counts after add one smoothing
+This happens due to 
+
+### Please run/alter demos.ipynb for the following:
+- count of possible vs actual n grams
+- generating sentences
+- getting probability sentences
+- plot of constant discounting (d) with good turing smoothing
+- perplexity of sentences from test corpus
